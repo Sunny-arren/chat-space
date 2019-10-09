@@ -189,11 +189,8 @@ PLATFORMS
 DEPENDENCIES
   byebug
   coffee-rails (~> 4.2)
-<<<<<<< Updated upstream
-=======
   devise
   font-awesome-rails
->>>>>>> Stashed changes
   haml-rails
   jbuilder (~> 2.5)
   jquery-rails
