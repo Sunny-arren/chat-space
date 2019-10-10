@@ -9,14 +9,16 @@
       %li.list
         = link_to edit_user_path(current_user) do
           = fa_icon 'cog', class: 'icon'
-  .groups
-    .group
-      - current_user.groups.each do |group|
-        = link_to '#' do
+  
+   .groups
+    - current_user.groups.each do |group|
+      .group
+        = link_to group_messages_path(group) do
           .group__name
             = group.name
           .group__message
-            メッセージはまだありません。
+            メッセージはまだありません。         
+            
     .group
       .group__name
         グループ名
