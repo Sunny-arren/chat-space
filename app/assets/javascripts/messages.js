@@ -1,19 +1,21 @@
-$(function(){
+$(document).on('turbolinks:load', function(){
   function buildHTML(message){
-    var html = `<div class="message">
+    var image = message.image ? `<img src="${message.image}">` : "";
+
+    var html =  `<div class="message">
                   <div class="upper-message">
                     <div class="upper-message__user-name">
-                      ${ message.user.name }
+                      ${ message.name }
                     </div>
                     <div class="upper-message__date">
-                      ${ message.created_at}
+                      ${ message.date}
                     </div>
                   </div>
                   <div class="lower-message">
                       <p class="lower-message__content">
                         ${ message.content }
                       </p>
-                     ${ message.image.url }
+                      ${ image }
                   </div>
                 </div>`
   return html;
@@ -32,8 +34,8 @@ $(function(){
   })
   .done(function(data){
     var html = buildHTML(data);
-    $('.messages').append(html)
-    $('.text_field').val('')
+    $('.messages').append(html);
+    $('form')[0].reset();
   })
   .fail(function(){
     alert('error');
