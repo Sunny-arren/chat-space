@@ -4,28 +4,16 @@
     .header
       .left-header
         .left-header__title
-          グループ名
+          = @group.name
         %ul.left-header__members
           Member：
           %li.member
-            メンバー名
-          %li.member
-            メンバー名
-          %li.member
-            メンバー名
+            - @group.group_users.each do |group_user|
+              = group_user.user.name
       .right-header
         .right-header__button
           = link_to "Edit", edit_group_path(@group)
     .messages
-      .message
-        .upper-message
-          .upper-message__user-name
-            メンバー
-          .upper-message__date
-            2017/04/04
-        .lower-meesage
-          .lower-message__content
-            メッセージ
       .message
         = render @messages
       .message
