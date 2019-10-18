@@ -39,7 +39,6 @@ function selectUserName(user_id, user_name){
   
   $(".chat-group-form__input").on("keyup", function() {
     var input = $(this).val();
-    console.log(input)
     $.ajax({
       type: 'GET',
       url: '/users',
