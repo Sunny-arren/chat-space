@@ -1,14 +1,14 @@
 $(document).on('turbolinks:load', function(){
   function buildHTML(message){
     var image = message.image ? `<img src="${message.image}">` : "";
-
-    var html =  `<div class="message">
+    console.log(message.image)
+    var html =  `<div class="message" data-id = ${message.id}>
                   <div class="upper-message">
                     <div class="upper-message__user-name">
-                      ${ message.name }
+                      ${ message.user_name }
                     </div>
                     <div class="upper-message__date">
-                      ${ message.date}
+                      ${ message.created_at}
                     </div>
                   </div>
                   <div class="lower-message">
@@ -20,6 +20,11 @@ $(document).on('turbolinks:load', function(){
                 </div>`
   return html;
   }
+
+  function ScrollToBottom(){
+    $('.messages').animate({scrollTop: $('.messages')[0].scrollHeight});
+  }
+
   $('#new_message').on('submit', function(e){
     e.preventDefault();
     var formData = new FormData(this);
@@ -40,5 +45,33 @@ $(document).on('turbolinks:load', function(){
   .fail(function(){
     alert('error');
   })
+ })
+
+  var reloadMessages = function() {
+   if (location.pathname.match(/\/groups\/\d+\/messages/)){
+    last_message_id = $('.message:last').data('id');
+    console.log(last_message_id)
+    $.ajax({
+    url: 'api/messages',
+    type: 'GET',
+    dataType: 'json',
+    data: {id: last_message_id}
+    })
+  
+ 
+  .done(function(messages) {
+    var insertHTML = '';
+    console.log(messages)
+    messages.forEach(function(message) {
+    insertHTML += buildHTML(message);
+    $('.messages').append(insertHTML);
+    ScrollToBottom()
+   })
+  })
+  .fail(function() {
+    alert('error');
+  });
+  }
+ }
+  setInterval(reloadMessages, 5000)
 })
-});
