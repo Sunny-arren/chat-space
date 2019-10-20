@@ -61,5 +61,9 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
   RSpec.configure do |config|
+    Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+    config.include Devise::Test::ControllerHelpers, type: :controller
+    config.include ControllerMacros, type: :controller
     config.include FactoryBot::Syntax::Methods
+  end
 end
