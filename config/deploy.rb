@@ -17,7 +17,7 @@ set :rbenv_ruby, '2.5.1'
 #カリキュラム通りに進めた場合、2.5.1か2.3.1です
 
 # どの公開鍵を利用してデプロイするか※例：~/.ssh/key_pem.pem
-set :ssh_options, auth_methods: [''],
+set :ssh_options, auth_methods: ['publickey'],
                   keys: ['~/.ssh/greenroad090.pem']  
 
 
