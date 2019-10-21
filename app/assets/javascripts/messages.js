@@ -40,6 +40,7 @@ $(document).on('turbolinks:load', function(){
     var html = buildHTML(data);
     $('.messages').append(html);
     $('form')[0].reset();
+    ScrollToBottom()
   })
   .fail(function(){
     alert('error');
