@@ -38,12 +38,13 @@ set :default_env, {
 
 # secrets.yml用のシンボリックリンクを追加
 set :linked_files, %w{ config/secrets.yml }
+
 after 'deploy:publishing', 'deploy:restart'
 namespace :deploy do
   task :restart do
     invoke 'unicorn:restart'
   end
-  
+
   desc 'upload secrets.yml'
   task :upload do
     on roles(:app) do |host|
