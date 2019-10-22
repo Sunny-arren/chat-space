@@ -39,11 +39,14 @@ $(document).on('turbolinks:load', function(){
   .done(function(data){
     var html = buildHTML(data);
     $('.messages').append(html);
-    $('form')[0].reset();
-    // ScrollToBottom()
+    $('#new_message')[0].reset();
+    ScrollToBottom()
   })
   .fail(function(){
     alert('error');
+  })
+  .always(function(){
+   $('.form__submit').removeAttr('disabled');
   })
  })
 
