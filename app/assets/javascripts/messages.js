@@ -65,7 +65,7 @@ $(document).on('turbolinks:load', function(){
   .done(function(messages) {
     var insertHTML = '';
     messages.forEach(function(message) {
-    insertHTML += buildHTML(message);
+    insertHTML = buildHTML(message);
     $('.messages').append(insertHTML);
     ScrollToBottom()
    })
@@ -75,5 +75,5 @@ $(document).on('turbolinks:load', function(){
   });
   }
  }
-  setInterval(reloadMessages, 20000)
+  setInterval(reloadMessages, 4000)
 })
