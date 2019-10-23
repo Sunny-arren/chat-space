@@ -53,7 +53,7 @@ $(document).on('turbolinks:load', function(){
   var reloadMessages = function() {
    if (location.pathname.match(/\/groups\/\d+\/messages/)){
     last_message_id = $('.message:last').data('id');
-    // console.log(last_message_id)
+    console.log(last_message_id)
     $.ajax({
     url: 'api/messages',
     type: 'GET',
@@ -75,5 +75,5 @@ $(document).on('turbolinks:load', function(){
   });
   }
  }
-  setInterval(reloadMessages, 8000)
+  setInterval(reloadMessages, 20000)
 })
