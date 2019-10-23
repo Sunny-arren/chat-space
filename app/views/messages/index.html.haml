@@ -11,8 +11,7 @@
             - @group.group_users.each do |group_user|
               = group_user.user.name
       .right-header
-        .right-header__button
-          = link_to "Edit", edit_group_path(@group)
+        = link_to "Edit", edit_group_path(@group)
     .messages
       = render @messages
     .form
