@@ -1,4 +1,5 @@
-$(document).on('turbolinks:load', function(){
+// $(document).on('turbolinks:load', function(){
+$(function () {
   function buildHTML(message){
     var image = message.image ? `<img src="${message.image}">` : "";
     var html =  `<div class="message" data-id = ${message.id}>
@@ -26,6 +27,7 @@ $(document).on('turbolinks:load', function(){
 
   $('#new_message').on('submit', function(e){
     e.preventDefault();
+    console.log("hello");
     var formData = new FormData(this);
     var url = $(this).attr('action')
     $.ajax({
@@ -40,7 +42,7 @@ $(document).on('turbolinks:load', function(){
     var html = buildHTML(data);
     $('.messages').append(html);
     $('#new_message')[0].reset();
-    ScrollToBottom()
+    ScrollToBottom();
   })
   .fail(function(){
     alert('error');
@@ -76,5 +78,6 @@ $(document).on('turbolinks:load', function(){
   });
   }
  }
-  setInterval(reloadMessages, 10000)
+ setInterval(reloadMessages, 10000)
 })
+ 
