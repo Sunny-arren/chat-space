@@ -67,6 +67,7 @@ $(document).on('turbolinks:load', function(){
     messages.forEach(function(message) {
     insertHTML = buildHTML(message);
     $('.messages').append(insertHTML);
+    Turbolinks.clearCache(message);
     ScrollToBottom()
    })
   })
