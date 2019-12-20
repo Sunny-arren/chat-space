@@ -1,29 +1,19 @@
-# README
+# Chat-space README
+# 概要
+TECH::EXPERT短期集中コースの後半戦（応用カリキュラム）で作成した、  
+グループ毎にチャットするデモWebアプリケーション。ユーザーはまず自らグループを作成し、  
+そこへ既存のユーザーを検索して呼び込み（削除も可能）、グループ内でチャットするという仕組み。  
+デモサイトを参考に、マークアップからサーバサイド実装、デプロイまでの作業を全て行った。  
+マークアップについては、下記の指示書のみが与えられた。サーバサイドについては、  
+JSを使用してインクリメンタルサーチと  メッセージ欄の自動更新を実装。  
+pictweet等を用いた簡易的な実装カリキュラムを参考に、ここも基本的に自力での実装が  
+求められた。最後にAWSのEC2インスタンスへの手動デプロイと、Capistranoを用いた  
+自動デプロイを行った。デプロイに関する教材内容は比較的詳しかったが、多くの場合、  
+デプロイ後のエラーが続出。期限との闘いに敗れ去る人たちが少なくなかったが、  
+一連の開発の流れを理解し、また期限内に自分で調べながら開発を行うことの厳しさを思い知った  
+非常にためになるカリキュラムだった。  
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-# chat-space DB設計
+# DB設計
 ## usersテーブル
 |Column|Type|Options|
 |------|----|-------|
@@ -43,12 +33,10 @@ Things you may want to cover:
 ### Association
 - belongs_to :user
 
-
 ## groupsテーブル
 |Column|Type|Options|
 |------|----|-------|
 |text|text|null: false|
-
 ### Association
 - has_many :users through:  :groups_users
 
@@ -59,3 +47,13 @@ Things you may want to cover:
 |users_id|integer|null: false, foreign_key: true|
 - belongs_to user
 - belongs_to group
+※グループ毎にチャットする仕組みのため、ユーザーとグループとの間に  
+多対多の関係が存在する。このため上記のように中間テーブルを  
+作成した。
+
+# バージョン情報
+Rails 5.0.7.2
+Ruby 2.5.1
+
+
+
