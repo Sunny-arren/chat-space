@@ -112,6 +112,7 @@ User.where('name LIKE(?)', "%#{params[:keyword]}%").where.not(id: @current_user.
 各グループの最新のメッセージが表示されるようにしている。  
 該当するhtmlコーディングの場所は、部分テンプレートのside_bar.html.hamlのgroups以下。  
 最新メッセージの表示については、group.rbに以下の記述。三項演算子は、画像のみ投稿された場合に対応。  
+
 ```
 def show_last_message
     if (last_message = messages.last).present?
@@ -136,88 +137,67 @@ def show_last_message
 BEM記法による類似した要素名が数多く存在する。このため、可読性の低下を避けるために空白行を設けた。  
 これに関連する装飾（scss）は、スクール側が用意したものをそのまま使用。  
 ２）members.jsについて
-  ①5〜１０行目 インクリメンタルサーチ起動後、表示される追加チャットメンバー（user)候補欄  
-  （２行目で「var search_list = $("#user-search-result")」と定義されている部分に、  
-  １５〜21行目に定義されている、appendUserName関数内に記述されたhtml内にある、  
-  user-search-addクラスが相当）の、右端に表示される「追加」をクリックすると、実行されることが書かれている。  
-  ②１１〜１３行目　既存チャットメンバー（user)候補欄の右端に表示される「削除」  
-  （_form.html.hamlの３２行目、「.user-search-remove」）をクリックすると実行される内容。  
-  ③１５〜２１行目　appendUserName関数の定義。ここでインクリメンタルサーチ起動時に、  
-  追加チャットメンバー候補（user)を、２行目で定義されたvar search_listにappendしている。  
-  ④２３〜28行目　appendNoUserName関数の定義。ここでインクリメンタルサーチ起動時、  
-  候補が見つからなかった場合、本来ならチャットメンバー候補（user)が表示される部分に、  
-  「一致するユーザーが見つかりません」とメッセージが表示されるようにしている。  
-  ⑤30〜37行目　selectUserName関数の定義。ここでインクリメンタルサーチ起動時に、  
-  既存チャットメンバーを表示させているほか、①で追加されたチャットメンバー（user)を直ちに表示させるために、  
-  以下のようにinputタグが設定され、当該チャットメンバーのuser_idが入力される仕様になっている。  
-  ```
-   <input name='group[user_ids][]' type='hidden' value='${ user_id }'>
-  ```
-  name属性の記述「group[user_ids][]」は、groupに属するuserのidたちを入れる、空の配列が  
-  指定されている（[ ]が無いと、追加ボタンを押してもuserが追加されない（＝user_id を追加できない）ことを確認済）。  
-  私見であるが、input タグのname属性は、ただの名前という認識は誤りであり（ウェブサイトに多くある説明は  
-  そこまでのものが多い）、入力される値の属性の一部を示していると考えた方が適切だと思う。  
-  ⑥３９行目以降　検索フォームに文字を入力した時にチャットメンバー（user)リストを表示する  
-  インクリメンタルサーチの動きを出す部分。ajaxに関する記述は代表的なものだ。  
-  done(リスト表示成功時）の部分で、appendUserName関数を用いて  
-  userのnameを表示させている。  
+①5〜１０行目 インクリメンタルサーチ起動後、表示される追加チャットメンバー（user)候補欄  
+（２行目で「var search_list = $("#user-search-result")」と定義されている部分に、  
+１５〜21行目に定義されている、appendUserName関数内に記述されたhtml内にある、  
+user-search-addクラスが相当）の、右端に表示される「追加」をクリックすると、実行されることが書かれている。  
+②１１〜１３行目　既存チャットメンバー（user)候補欄の右端に表示される「削除」  
+（_form.html.hamlの３２行目、「.user-search-remove」）をクリックすると実行される内容。  
+③１５〜２１行目　appendUserName関数の定義。ここでインクリメンタルサーチ起動時に、  
+追加チャットメンバー候補（user)を、２行目で定義されたvar search_listにappendしている。  
+④２３〜28行目　appendNoUserName関数の定義。ここでインクリメンタルサーチ起動時、  
+候補が見つからなかった場合、本来ならチャットメンバー候補（user)が表示される部分に、  
+「一致するユーザーが見つかりません」とメッセージが表示されるようにしている。  
+⑤30〜37行目　selectUserName関数の定義。ここでインクリメンタルサーチ起動時に、  
+既存チャットメンバーを表示させているほか、①で追加されたチャットメンバー（user)を直ちに表示させるために、  
+以下のようにinputタグが設定され、当該チャットメンバーのuser_idが入力される仕様になっている。  
+```
+<input name='group[user_ids][]' type='hidden' value='${ user_id }'>
+```
+name属性の記述「group[user_ids][]」は、groupに属するuserのidたちを入れる、空の配列が  
+指定されている（[ ]が無いと、追加ボタンを押してもuserが追加されない（＝user_id を追加できない）ことを確認済）。  
+私見であるが、input タグのname属性は、ただの名前という認識は誤りであり（ウェブサイトに多くある説明は  
+そこまでのものが多い）、入力される値の属性の一部を示していると考えた方が適切だと思う。  
+⑥３９行目以降　検索フォームに文字を入力した時にチャットメンバー（user)リストを表示する  
+インクリメンタルサーチの動きを出す部分。ajaxに関する記述は代表的なものだ。  
+done(リスト表示成功時）の部分で、appendUserName関数を用いて  
+userのnameを表示させている。  
+
 ## 自動更新
 １）【概要】各グループごとのメッセージを、一定時間ごとにアップデートする機能。これにより、
-　ページをリロードせずに、ほかのユーザーが投稿した内容も、ほぼリアルタイムで表示できるようになる。
+ページをリロードせずに、ほかのユーザーが投稿した内容も、ほぼリアルタイムで表示できるようになる。
 ２）コントローラについて：  
- これに関するコントローラを、webAPIとして記述（controllers/api/messages_controller.rb）。  
- ブラウザからサーバへリクエストを送るのではなく、プログラムから直接リクエストを送る設定のため。  
- 本家のmessages_controller.rbと区別するため、class Apiという名前空間（namespace)を設定。  
- 下記の5行目の記述で、ajaxで送信されてくる、ユーザー自身の送信したメッセージの最後のidを定義。  
-　```
- last_message_id = params[:id].to_i  
- ```
- 下記の６行目の記述で、上記で定義したidよりも大きい値のidのメッセージ（@messagese)を定義。  
- ```
+これに関するコントローラを、webAPIとして記述（controllers/api/messages_controller.rb）。  
+ブラウザからサーバへリクエストを送るのではなく、プログラムから直接リクエストを送る設定のため。  
+本家のmessages_controller.rbと区別するため、class Apiという名前空間（namespace)を設定。  
+下記の5行目の記述で、ajaxで送信されてくる、ユーザー自身の送信したメッセージの最後のidを定義。  
+```
+last_message_id = params[:id].to_i
+```
+下記の６行目の記述で、上記で定義したidよりも大きい値のidのメッセージ（@messagese)を定義。  
+
+```
  @messages = group.messages.includes(:user).where("id > #{last_message_id}")
- ```
+```
 3)message.js について
-　①２から２１行目　buildHTML関数を定義。その５行目、${message.id}にカスタムデータ属性を付ける。  
- ```
-  var html =  `<div class="message" data-id = ${message.id}>
- ```
- このようにすることで、後の記述になるが、状況に応じて変わる最後のメッセージのidをJSで取得し易くしている。  
- ４行目は三項演算子。画像があれば表示、画像がなければ非表示（"")、つまり、画像が無い場合でもエラーに  
- ならないようにしている。  
- ```
- var image = message.image ? `<img src="${message.image}">` : "";
- ```
- img src="${message.image}"について：src属性は参照先のurlを指定する。また、jbuilderで  
- image.url と書いているので、ここでさらにurlは付けない（付けるとundefinedと説明される）。  
- 逆にjbuilderの方で.urlが無いと、urlが認識されずに空のオブジェクトとして認識されてしまう。  
- ②２２行目　return html の記述があることで、htmlで描画したビューを、ほかの関数でも使えるようなる  
- （この記述を無くしてしまうと、ほかの関数内でbuildHTML関数を使った場合、該当するビューが表示されなく  
- なってしまう）。  
- ③２４、２５行目　メッセージの最後までメッセージ表示画面をスクロールする関数、ScrollToBottomが定義  
- されている。DOM要素のmessagesが、画面全体をカバーする要素（messages/index.html.hamlの１５行目）。  
- scrollHeightメソッドを使用。(コードの意味を再確認する必要あり）
- ④２８から５２行目
- $('#new_message')[0].reset();これの意味を再確認する必要あり
- 
- 
- 
- 
- 
-  
-
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
+①２から２１行目　buildHTML関数を定義。その５行目、${message.id}にカスタムデータ属性を付ける。  
+```
+var html =  `<div class="message" data-id = ${message.id}>
+```
+このようにすることで、後の記述になるが、状況に応じて変わる最後のメッセージのidをJSで取得し易くしている。  
+４行目は三項演算子。画像があれば表示、画像がなければ非表示（"")、つまり、画像が無い場合でもエラーに  
+ならないようにしている。  
+```
+var image = message.image ? `<img src="${message.image}">` : "";
+```
+img src="${message.image}"について：src属性は参照先のurlを指定する。また、jbuilderで  
+image.url と書いているので、ここでさらにurlは付けない（付けるとundefinedと説明される）。  
+逆にjbuilderの方で.urlが無いと、urlが認識されずに空のオブジェクトとして認識されてしまう。  
+②２２行目　「return html」の記述があることで、htmlで描画したビューを、ほかの関数でも使えるようなる  
+（この記述を無くしてしまうと、ほかの関数内でbuildHTML関数を使った場合、該当するビューが表示されなく  
+なってしまう）。  
+③２４、２５行目　メッセージの最後までメッセージ表示画面をスクロールする関数、ScrollToBottomが定義  
+されている。DOM要素のmessagesが、画面全体をカバーする要素（messages/index.html.hamlの１５行目）。    
+scrollHeightメソッドを使用。(コードの意味を再確認する必要あり）  
+④２８から５２行目  
+$('#new_message')[0].reset();これの意味を再確認する必要あり  
