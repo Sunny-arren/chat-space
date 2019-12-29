@@ -104,14 +104,15 @@ def index
 ```
 2行目がわかりづらいが、  
 User.where('name LIKE(?)', "%#{params[:keyword]}%").where.not(id: @current_user.id) と同じ。  
-前段で入力されたキーワードを含むnameのユーザーを返す一方、後段（where.not以下）でcurrent_userを検索しないように  
-している（「not」は「（後ろに続く引数）ではない」を意味するメソッド。SQL文を考えると分かりやすい）。  
+前段で入力されたキーワードを含むnameのユーザーを返す一方、後段（where.not以下）で  
+current_userを検索しないようにしている（「not」は「（後ろに続く引数）ではない」を意味するメソッド。  
+SQL文を考えると分かりやすい）。  
   
 ## group関連  
 1)rootページの左サイドバーに、current_userの所属するグループ名と、  
 各グループの最新のメッセージが表示されるようにしている。  
 該当するhtmlコーディングの場所は、部分テンプレートのside_bar.html.hamlのgroups以下。  
-最新メッセージの表示については、group.rbに以下の記述。三項演算子は、画像のみ投稿された場合に対応。  
+最新メッセージの表示については、group.rbに以下のように記述。三項演算子は、画像のみ投稿された場合に対応。  
 
 ```
 def show_last_message
@@ -127,7 +128,55 @@ def show_last_message
 ３）createアクション、updateアクションでは、group新規作成時および編集時の条件分岐を導入。  
 ４）インクリメンタルサーチに関しては別記。
 
-## message 関連
+## message 関連  
+投稿機能に関しては、fakerとfactory_botを利用して単体テストを実行した。  
+コーディングは他の部分と異なり教材に雛形が充実していたため、意味の理解に努めた。  
+①テストで使用するデータの準備について（Fakerを利用）は、spec/factories/messages.rb等に、  
+以下のように記述。インスタンス名はname,password,emailなど  
+```
+インスタンス名{Faker::(Fakerに用いられているダミーデータ群の名称}  
+```
+画像についてはFakerでは生成しないので、publicフォルダに用意したtest_image.jpgを利用。  
+spec/factories/messages.rbに以下のように記述。  
+```
+image {File.open("#{Rails.root}/public/images/test_image.jpg")}
+```
+②messageコントローラのテスト：  
+コードはspec/controllers/messages_controller_spec.rbに記述。  
+４、５行目で、letを用いてテスト中に使用するインスタンスを定義  
+```
+let(:group) { create(:group) }
+let(:user) { create(:user) }
+```
+７〜３７行目で、indexアクションのテスト。  
+この内、9~26行目がloginしている場合のテスト。  
+```
+describe '#index' do
+
+    context 'log in' do
+      before do
+        login user
+        get :index, params: { group_id: group.id }
+      end
+
+      it 'assigns @message' do
+        expect(assigns(:message)).to be_a_new(Message)
+      end
+      (中略）     
+    end
+
+    context 'not log in' do
+      before do
+        get :index, params: { group_id: group.id }
+      end
+
+      it 'redirects to new_user_session_path' do
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+```
+この後にcreateアクションテストが続く。  
 
 # Javascript, 非同期通信関連
 ## インクリメンタルサーチ  
@@ -164,8 +213,8 @@ done(リスト表示成功時）の部分で、appendUserName関数を用いて
 userのnameを表示させている。  
 
 ## 自動更新
-１）【概要】各グループごとのメッセージを、一定時間ごとにアップデートする機能。これにより、
-ページをリロードせずに、ほかのユーザーが投稿した内容も、ほぼリアルタイムで表示できるようになる。
+１）【概要】各グループごとのメッセージを、一定時間ごとにアップデートする機能。これにより、  
+ページをリロードせずに、ほかのユーザーが投稿した内容も、ほぼリアルタイムで表示できるようになる。  
 ２）コントローラについて：  
 これに関するコントローラを、webAPIとして記述（controllers/api/messages_controller.rb）。  
 ブラウザからサーバへリクエストを送るのではなく、プログラムから直接リクエストを送る設定のため。  
@@ -218,9 +267,25 @@ ajaxを用いて新しいメッセージがサーバへ送信（３２〜３９�
 Rails5では、formのsubmit実行後に、自動でdisabled属性が追加され、2回目以降の送信ができなく  
 なってしまうため、これを取り除くコードを記述している。  
   
-⑤５４から８１行目　reloadMessagesという名称で、自動更新の関数を定義した部分。  
+⑤５４から78行目　reloadMessagesという名称で、自動更新の関数を定義した部分。  
+自動更新を行うのを、メッセージ一覧表示画面のみに限定するため、５５行目で条件設定している。
+```
+if (location.pathname.match(/\/groups\/\d+\/messages/)){
+    last_message_id = $('.message:last').data('id');
+```
+location.pathnameは、現在開いているページのURLを取得・設定するメソッド。
+また後続の「XX.match(正規表現）」で、XXが正規表現に一致すればXXを返す。
+ここではJSのif文の（ ）内に用いて、現在開いているページが「groups/19/messages」のような
+パスかどうかを真偽判定している。真（要するにメッセージ一覧ページ）ならば、{}内が実行される。
 
+⑥　８０行目は自動更新の実行スケジュールの記述。１００００ミリ秒＝１０秒である。  
+```
+setInterval(reloadMessages, 10000)
+```
+⑦　１行目　コメントアウトしている部分。画像投稿したタイミングで自動更新が同時になされると、  
+メッセージ欄にキャッシュの画像と通常の画像が同時に表示されて二重投稿されたように見えてしまうエラーが出た。  
+原因を、リロード時にリロード前のキャッシュを利用するturbolinksと考え、これを解除（コメントアウト）した。  
+しかし現在もなお完全に解消されていない。  
+71行目に「Turbolinks.clearCache();」と記述しても、状況は変わらなかった。  
 
-
-
-
+以上です。　　
