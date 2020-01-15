@@ -22,7 +22,26 @@ pictweet等を用いた簡易的な実装カリキュラムを参考に、ここ
 本READMEの、DB設計を除く部分は、全カリキュラム終了後に自身の復習を兼ねて  
 作成したものである。期限内LGTMを優先し、時間に追われたカリキュラム履修当時と異なり、  
 多くの気づきをもたらしていると思う。  
-  
+
+## デプロイ先について
+AWSのEC2へデプロイ
+URL http://3.132.201.254/  
+
+【サインアップ画面】  
+![サインアップ画面](https://user-images.githubusercontent.com/56028886/72423274-53aba980-37c7-11ea-8786-0dfe27a49146.png)  
+【ログイン画面】  
+![ログイン画面](https://user-images.githubusercontent.com/56028886/72423278-54dcd680-37c7-11ea-95a6-54a0b9705b55.png)
+## example user 情報  
+### user1:  
+email:freedom@nytimes.com  
+pwd: 1234567yy  
+nickname: Mircle  
+### user2：  
+email:feather_cap@sprout.com  
+pwd: 1234567tt  
+nickname: SpeaKING  
+＊適当に写真を含めて投稿してみてください。  
+
 # DB設計
 ## usersテーブル
 |Column|Type|Options|
@@ -109,7 +128,7 @@ def show_last_message
 ①テストで使用するデータの準備について（Fakerを利用）は、spec/factories/messages.rb等に、以下のように記述。インスタンス名はname,password,emailなど  
 
 ```
-インスタンス名{Faker::(Fakerに用いられているダミーデータ群の名称}  
+インスタンス名{Faker::(Fakerに用いられているダミーデータ群の名称)}  
 ```
 画像についてはFakerでは生成しないので、publicフォルダに用意したtest_image.jpgを利用。spec/factories/messages.rbに以下のように記述。  
 ```
@@ -153,7 +172,7 @@ describe '#index' do
 この後にcreateアクションテストが続く。  
 
 # Javascript, 非同期通信関連
-## インクリメンタルサーチ  
+## チャットメンバー追加・新規グループ作成時の、メンバー検索に関するインクリメンタルサーチ  
 1)これに関わるhtmlは、部分テンプレートのform.html.hamlの14行目「.chat-group-form__field.clearfix」から、32行目の「.js-remove-btn 削除」まで。スクール側が用意したものを編集。なお、#user-search-result要素に検索結果が表示され、その部分のhtmlは、javascripts/members.js内に記述。BEM記法による類似した要素名が数多く存在する。このため、可読性の低下を避けるために空白行を設けた。これに関連する装飾（scss）は、スクール側が用意したものをそのまま使用。  
 2)members.jsについて  
 ①5〜10行目 インクリメンタルサーチ起動後、表示される追加チャットメンバー（user)候補欄（2行目で「var search_list = $("#user-search-result")」と定義されている部分に、15〜21行目に定義されている、appendUserName関数内に記述されたhtml内にある、user-search-addクラスが相当）の、右端に表示される「追加」をクリックすると、実行されることが書かれている。  
@@ -174,13 +193,21 @@ name属性の記述「group[user_ids][]」は、groupに属するuserのidたち
 私見であるが、input タグのname属性は、ただの名前という認識は誤りであり（ウェブサイトに多くある説明はそこまでのものが多い）、入力される値の属性の一部を示していると考えた方が適切だと思う。  
 ⑥39行目以降 検索フォームに文字を入力した時にチャットメンバー（user)リストを表示する、インクリメンタルサーチの動きを出す部分。ajaxに関するコーディングは代表的な書き方と思う。done(リスト表示成功時）の部分で、appendUserName関数を用いてuserのnameを表示させている。  
 
+【投稿・閲覧画面】  
+![投稿・閲覧画面](https://user-images.githubusercontent.com/56028886/72425024-4e039300-37ca-11ea-8bda-b36ec2d3137c.png)  
+【チャットグループの新規作成ボタン】  
+![新規チャットグループ作成ボタン](https://user-images.githubusercontent.com/56028886/72424268-0defe080-37c9-11ea-90a7-65b30cc1b956.png)  
+【チャットグループの新規作成画面】  
+![新規チャットグループ作成](https://user-images.githubusercontent.com/56028886/72424269-0defe080-37c9-11ea-986a-e9bb827dc4b6.png)  
+【チャットグループの編集（チャットメンバーの追加）ボタン】  
+![チャットグループ編集ボタン](https://user-images.githubusercontent.com/56028886/72424271-0defe080-37c9-11ea-82ec-29281c3f19e5.png)  
+【チャットグループの編集画面】  
+![チャットグループ編集画面](https://user-images.githubusercontent.com/56028886/72424272-0defe080-37c9-11ea-8a32-eb22c4e51f90.png)
+
 ## 自動更新
 1)【概要】各グループごとのメッセージを、一定時間ごとにアップデートする機能。これにより、ページをリロードせずに、ほかのユーザーが投稿した内容も、ほぼリアルタイムで表示できるようになる。  
 2)コントローラについて：  
-ブラウザからサーバへリクエストを送るのではなく、プログラムから直接リクエストを送る設定のため。  
-これに関するコントローラを、webAPIとして記述（controllers/api/messages_controller.rb）。  
-本家のmessages_controller.rbと区別するため、class Apiという名前空間（namespace)を設定。  
-下記の5行目の記述で、ajaxで送信されてくる、ユーザー自身の送信したメッセージの最後のidを定義。  
+ブラウザからサーバへリクエストを送るのではなく、プログラムから直接リクエストを送る設定のため。これに関するコントローラを、webAPIとして記述（controllers/api/messages_controller.rb）。本家のmessages_controller.rbと区別するため、class Apiという名前空間（namespace)を設定。下記の5行目の記述で、ajaxで送信されてくる、ユーザー自身の送信したメッセージの最後のidを定義。  
 ```
 last_message_id = params[:id].to_i
 ```
