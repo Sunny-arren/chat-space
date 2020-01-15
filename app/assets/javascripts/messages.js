@@ -27,7 +27,6 @@ $(function () {
 
   $('#new_message').on('submit', function(e){
     e.preventDefault();
-    console.log("hello");
     var formData = new FormData(this);
     var url = $(this).attr('action')
     $.ajax({
@@ -67,7 +66,7 @@ $(function () {
   .done(function(messages) {
     var insertHTML = '';
     messages.forEach(function(message) {
-    insertHTML = buildHTML(message);
+    insertHTML += buildHTML(message);
     $('.messages').append(insertHTML);
     Turbolinks.clearCache();
     ScrollToBottom()
