@@ -158,7 +158,7 @@ describe '#index' do
 2)members.jsについて  
 ①5〜10行目 インクリメンタルサーチ起動後、表示される追加チャットメンバー（user)候補欄（2行目で「var search_list = $("#user-search-result")」と定義されている部分に、15〜21行目に定義されている、appendUserName関数内に記述されたhtml内にある、user-search-addクラスが相当）の、右端に表示される「追加」をクリックすると、実行されることが書かれている。  
 ②11〜13行目 既存チャットメンバー（user)候補欄の右端に表示される「削除」  
-（_form.html.hamlの３２行目、「.user-search-remove」）をクリックすると実行される内容。  
+（_form.html.hamlの32行目、「.user-search-remove」）をクリックすると実行される内容。  
 ③15〜21行目 appendUserName関数の定義。ここでインクリメンタルサーチ起動時に、  
 追加チャットメンバー候補（user)を、２行目で定義されたvar search_listにappendしている。  
 ④23〜28行目 appendNoUserName関数の定義。ここでインクリメンタルサーチ起動時、  
