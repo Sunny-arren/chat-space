@@ -1,4 +1,4 @@
-# README
+# README（freemarket_sample_61h）
 # 概要
 TECH::EXPERTの最終課題。メルカリのWebアプリケーションのリプロダクション。
 ## 開発環境
@@ -239,6 +239,12 @@ Railsのライブラリにあるgem 'ancestry' を利用して実装した。簡
 https://gyazo.com/e000951f649ffb312a7fdb8ff0c3c794  
 
 ## ログイン・サインアップ機能
+### メールアドレスで登録する
+HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsignup_controllerに、入力段階（ページ）毎にstep1からstep4のアクションを設定し、session情報を管理している。バリデーションの詳細については現在調査中。
+【ユーザー情報入力画面（step1)】  
+![ユーザー情報入力画面_1(step1_1)](https://user-images.githubusercontent.com/56028886/72711160-dc518d80-3bab-11ea-9f77-79bb2471a7cb.png)
+![ユーザー情報入力画面_2(step1_2)](https://user-images.githubusercontent.com/56028886/72711162-dd82ba80-3bab-11ea-8b11-6c3261ee0ae3.png)
+
 ### SNSを用いたログイン機能
 ## 商品購入ページ
 ### クレジットカード登録機能（PAY.JPを利用）
