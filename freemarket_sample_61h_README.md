@@ -240,7 +240,7 @@ https://gyazo.com/e000951f649ffb312a7fdb8ff0c3c794
 
 ## ログイン・サインアップ機能
 ### メールアドレスで登録する
-HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定、session情報を管理している。また、validates_step1~4で、一括して情報の有無についてバリデーションをかけていると思われる。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。
+HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定、session情報を管理している。また、validates_step1~4で、一括して情報の有無についてバリデーションをかけていると思われる。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。  
 【ユーザー情報入力画面（step1)】  
 ![ユーザー情報入力画面_1(step1_1)](https://user-images.githubusercontent.com/56028886/72711160-dc518d80-3bab-11ea-9f77-79bb2471a7cb.png)
 ![ユーザー情報入力画面_2(step1_2)](https://user-images.githubusercontent.com/56028886/72711162-dd82ba80-3bab-11ea-8b11-6c3261ee0ae3.png)
