@@ -240,15 +240,59 @@ https://gyazo.com/e000951f649ffb312a7fdb8ff0c3c794
 
 ## ログイン・サインアップ機能
 ### メールアドレスで登録する
-HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定、session情報を管理している。バリデーションの詳細については現在調査中。  
+HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定、session情報を管理している。また、validates_step1~4で、一括して情報の有無についてバリデーションをかけていると思われる。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。
 【ユーザー情報入力画面（step1)】  
 ![ユーザー情報入力画面_1(step1_1)](https://user-images.githubusercontent.com/56028886/72711160-dc518d80-3bab-11ea-9f77-79bb2471a7cb.png)
 ![ユーザー情報入力画面_2(step1_2)](https://user-images.githubusercontent.com/56028886/72711162-dd82ba80-3bab-11ea-8b11-6c3261ee0ae3.png)
+![ユーザ情報入力画面_3(step1_3)](https://user-images.githubusercontent.com/56028886/72780743-f306eb80-3c62-11ea-9770-c4c0dfb38d38.png)
 
-### SNSを用いたログイン機能
-## 商品購入ページ
-### クレジットカード登録機能（PAY.JPを利用）
+### SNSを用いたログイン機能  
+Googleアカウントと、FacebookアカウントでSNS認証を行えるようにした（現在はこの部分を担当したメンバーのAPIキー（非公開）のセッティングに問題が生じている様子で、正常に作動しない。課題提出時は問題なく作動していた）。以下の3つのgemをインストール（再度のgemは環境変数を管理するもの。sns_credentialsは、認証実行の結果、返って来るproviderと各ユーザーを識別するuidを保存するテーブル。  
+```
+gem 'omniauth-google-oauth2'
+gem 'omniauth-facebook'
+gem 'dotenv-rails'
+```
+本実装に伴い、routes.rb の devise_for :users の後に以下を追記。  
+```
+controllers: {omniauth_callbacks: 'users/omniauth_callbacks'}
+```
+関連するコントローラーは、users/omniauth_callbacks_controller.rb 。以下は、すでに認証されている場合と、そうでない場合の条件分岐を記述した部分。  
+```
+def callback_for(provider)
+    @omniauth = request.env['omniauth.auth']
+    info = User.find_oauth(@omniauth)
+    @user = info[:user]
+    if @user.persisted? 
+      sign_in_and_redirect @user, event: :authentication
+      set_flash_message(:notice, :success, kind: "#{provider}".capitalize) if is_navigational_format?
+    else 
+      @sns = info[:sns]
+      session[:provider] = @sns[:provider]
+      session[:uid] = @sns[:uid]
+      render template: "signup/step1"
+    end
+  end
+```
+【サインアップ画面】  
+![サインアップ画面](https://user-images.githubusercontent.com/56028886/72786700-8fd08580-3c71-11ea-95f9-2a509d00d584.png)
+【ログイン画面】  
+![ログイン画面](https://user-images.githubusercontent.com/56028886/72786706-9101b280-3c71-11ea-9903-191a0feb5889.png)
+
+## 商品購入機能
+### 商品購入ページ
+商品詳細ページの、「購入画面に進む」をクリックすると、購入画面へ遷移する。購入画面の「購入する」ボタンは、ログインしたユーザーがクレジットカード登録している時のみアクティブ（赤色）になるようにしている。同ボタンをクリックすると、ボタンの表示は「購入が完了しました」（灰色）に変化する。商品購入後の商品詳細ページの変化（売却済みの表示を出すなど）は実装していない。  
+【商品購入ページ（アクティブ）】  
+![購入画面](https://user-images.githubusercontent.com/56028886/72789221-a75e3d00-3c76-11ea-9dab-b56dfbb4cfc9.png)
+【商品購入ページ（非アクティブ）】  
+![購入画面（非アクティブ）](https://user-images.githubusercontent.com/56028886/72789394-0d4ac480-3c77-11ea-9916-ee047d85cc83.png)
+
+### クレジットカード登録機能（PAY.JPを利用）  
+
+
+
 ## ヘッダーとフッター
+マークアップを私が担当した。
 
 # 開発の総括
 ## 自身の担当箇所
