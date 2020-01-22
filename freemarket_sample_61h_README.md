@@ -240,7 +240,68 @@ https://gyazo.com/e000951f649ffb312a7fdb8ff0c3c794
 
 ## ログイン・サインアップ機能
 ### メールアドレスで登録する
-HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定、session情報を管理している。また、validates_step1~4で、一括して情報の有無についてバリデーションをかけていると思われる。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。  
+HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定。User.newを実行した上で、入力された情報をsession[:XX]に代入している（各stepに書かれているsessionデータは、一つ前のstepのものだが、前にリクエストされたデータを、次のリクエストへ引き継ぐ役目があると考えると理解できる。また、validates_step1~4で、一括して情報の有無についてバリデーションをかけている（バリデーションの方法（正規表現）は、user.rbに書かれている）。生年月日については、date_selectメソッドを利用（ビューに具体的な記述がある）。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。  
+【signup_controllerの一部抜粋】  
+```
+def step1
+    @user = User.new
+  end
+
+  def step2
+    birthday                        = birthday_join(params[:birthday])
+    session[:nickname]              = user_params[:nickname]
+    session[:email]                 = user_params[:email]
+    session[:password]              = user_params[:password]
+    session[:password_confirmation] = user_params[:password_confirmation]
+    session[:last_name]             = user_params[:last_name]
+    session[:name]                  = user_params[:name]
+    session[:last_name_f]           = user_params[:last_name_f]
+    session[:name_f]                = user_params[:name_f]
+    session[:birthday]              = birthday
+    session[:provider]              = session[:provider]
+    session[:uid]                   = session[:uid]
+    @user = User.new
+  end
+```
+```
+def validates_step1
+    birthday                        =  birthday_join(params[:birthday])
+    session[:nickname]              = user_params[:nickname]
+    session[:email]                 = user_params[:email]
+    session[:password]              = user_params[:password]
+    session[:password_confirmation] = user_params[:password_confirmation]
+    session[:last_name]             = user_params[:last_name]
+    session[:name]                  = user_params[:name]
+    session[:last_name_f]           = user_params[:last_name_f]
+    session[:name_f]                = user_params[:name_f]
+    session[:birthday]              = birthday
+    @user = User.new(
+      nickname:               session[:nickname],
+      email:                  session[:email],
+      password:               session[:password],
+      password_confirmation:  session[:password_confirmation],
+      last_name:              session[:last_name],
+      name:                   session[:name],
+      last_name_f:            session[:last_name_f],
+      name_f:                 session[:name_f],
+      birthday:               session[:birthday]
+    )
+    render :step1 unless @user.valid?(:validates_step1)
+  end
+
+  def validates_step2
+    session[:phone_number] = user_params[:phone_number]
+    @user = User.new(
+      phone_number:          session[:phone_number],
+      password:              "1234567",
+      password_confirmation: "1234567",
+      email:                 "123@gmail.com"
+    )
+    render :step2 unless @user.valid?(:validates_step2)
+  end
+```
+sessionのコーディングはスクラムリーダーが一人で全て行っていたが、まだよく分からない部分が多い。validates_step2のダミーデータの設定については、deviseにもともと入っている設定が邪魔をするのを防ぐためと聞いているが、この書き方でなぜそれを防ぐことができるのかは、現時点で不明である。  
+
 【ユーザー情報入力画面（step1)】  
 ![ユーザー情報入力画面_1(step1_1)](https://user-images.githubusercontent.com/56028886/72711160-dc518d80-3bab-11ea-9f77-79bb2471a7cb.png)
 ![ユーザー情報入力画面_2(step1_2)](https://user-images.githubusercontent.com/56028886/72711162-dd82ba80-3bab-11ea-8b11-6c3261ee0ae3.png)
@@ -273,23 +334,22 @@ def callback_for(provider)
       render template: "signup/step1"
     end
   end
-```
+```  
 【サインアップ画面】  
-![サインアップ画面](https://user-images.githubusercontent.com/56028886/72786700-8fd08580-3c71-11ea-95f9-2a509d00d584.png)
+![サインアップ画面](https://user-images.githubusercontent.com/56028886/72786700-8fd08580-3c71-11ea-95f9-2a509d00d584.png)  
 【ログイン画面】  
-![ログイン画面](https://user-images.githubusercontent.com/56028886/72786706-9101b280-3c71-11ea-9903-191a0feb5889.png)
-
+![ログイン画面](https://user-images.githubusercontent.com/56028886/72786706-9101b280-3c71-11ea-9903-191a0feb5889.png)  
+  
 ## 商品購入機能
 ### 商品購入ページ
 商品詳細ページの、「購入画面に進む」をクリックすると、購入画面へ遷移する。購入画面の「購入する」ボタンは、ログインしたユーザーがクレジットカード登録している時のみアクティブ（赤色）になるようにしている。同ボタンをクリックすると、ボタンの表示は「購入が完了しました」（灰色）に変化する。商品購入後の商品詳細ページの変化（売却済みの表示を出すなど）は実装していない。  
 【商品購入ページ（アクティブ）】  
-![購入画面](https://user-images.githubusercontent.com/56028886/72789221-a75e3d00-3c76-11ea-9dab-b56dfbb4cfc9.png)
+![購入画面](https://user-images.githubusercontent.com/56028886/72789221-a75e3d00-3c76-11ea-9dab-b56dfbb4cfc9.png)  
 【商品購入ページ（非アクティブ）】  
-![購入画面（非アクティブ）](https://user-images.githubusercontent.com/56028886/72789394-0d4ac480-3c77-11ea-9916-ee047d85cc83.png)
+![購入画面（非アクティブ）](https://user-images.githubusercontent.com/56028886/72789394-0d4ac480-3c77-11ea-9916-ee047d85cc83.png)  
 
 ### クレジットカード登録機能（PAY.JPを利用）  
-
-
+PAY.JPのアカウントを設定してAPIを取得、また開発サイドではgem 'payjp'をインストール。
 
 ## ヘッダーとフッター
 マークアップを私が担当した。
@@ -307,7 +367,7 @@ def callback_for(provider)
 それでもタスクの量や難易度に比して、平均をだいぶ過ぎる時間を要してしまった。シンプルなタスクを担当することになっても、気を抜かずに行った。
 
 ## アジャイル型開発のメリットとデメリットなど
-最大のメリットは、チームの結束が高まり、モチベーションが上がる点ではないかと思う。自分自身のマインドセットに与えたプラスの影響も大きかった。デメリットは、個々人のスキルの幅が大きく、作業量に多寡が生じ易いこと。アジャイル型開発について述べた記事を読むと、こうした属人的な作業量の差については、一つの件について共同でプログラミングを行うのが良いと書かれていたが、非効率であろう（一人で基本的に完結させた方が効率的。他人が書いたものを読解するのはそもそも困難）というのが我々の認識で、時間の制限もある中で深くは検討しなかった。しかし共同でやりたいという要望は、スクラムリーダー以外の誰もが持っていた。そうでなければ開発を通じたスキルアップが難しいからである（できる人は多くの課題にチャレンジできる、できない人はチャレンジできない、ということになってしまう）。もしも実現できていたら、私も含めてメンバー全員がもっと色々な機能実装にチャレンジできたことと思う。なお、ヘッダーのカテゴリ検索機能と、いいね！機能はレベルが高く、今思うと当時の私にはオーバースペックであった。しかしながら、どの機能がどのくらいの難易度なのか、当時はスクラムリーダーを含め、誰もがよく分からなかった。とはいえ、アジャイル型開発において、当初は作業の難易度や必要な時間が不明で、走りながら明らかになってゆくということはよくあることではないかと思う。  
+最大のメリットは、チームの結束が高まり、モチベーションが上がる点ではないかと思う。自分自身のマインドセットに与えたプラスの影響も大きかった。デメリットは、個々人のスキルの幅が大きく、作業量に多寡が生じ易いこと。アジャイル型開発について述べた記事を読むと、こうした属人的な作業量の差については、一つの件について共同でプログラミングを行うのが良いと書かれていたが、一人で基本的に完結させた方が効率的で、他者とコーディングを分割するのはそもそも困難で想像もできないというのが我々の認識で、時間の制約もある中で深くは検討しなかった。しかし共同でやりたいという要望は、スクラムリーダー以外の誰もが持っていた。そうでなければ開発を通じたスキルアップが難しいからである（できる人は多くの課題にチャレンジできる、できない人はチャレンジできない、ということになってしまう）。もしも実現できていたら、私も含めてメンバー全員がもっと色々な機能について、理解を深められたことと思う。なお、ヘッダーのカテゴリ検索機能と、いいね！機能はレベルが高く、今思うと当時の私にはオーバースペックであった。しかしながら、どの機能がどのくらいの難易度なのか、当時はスクラムリーダーを含め、誰もがよく分からなかった。とはいえ、アジャイル型開発において、当初は作業の難易度や必要な時間が不明で、走りながら明らかになってゆくということはよくあることではないかと思う。  
 
 ##  苦労した点  
 分かり易いところから述べると、画像スライドの実装について、当初プラグインを利用しようと考えたがこれは大失敗だった。当時の理解度/スキルではプラグインを、作成しているアプリに合わせることができず、また、そもそもプラグインを利用するとエラーが生じた時の原因がわかりづらい。最終的には同期に相談するなどして、既知の内容を利用した。いいね！機能はRails Tutorialを解説した情報を利用しようとしたが、難し過ぎた（今なら参考にしない）。カテゴリ検索機能については前述の通り。インターネット上には数多くのコーディング情報が溢れているが、内容の難しいものや未知の内容が多い。安易に答えを見つけようとして、無理にこうした内容に合わせたりせず、まずは自走し、たとえそれが効率的なものでなかったとしても、きちんと動くようにすることが、スキルの向上に繋がると痛感した。  
