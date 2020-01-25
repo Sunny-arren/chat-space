@@ -354,7 +354,7 @@ PAY.JPのアカウントを設定してAPIを取得、また開発サイドで�
 def set_card
     @card = Card.where(user_id: current_user.id).first if Card.where(user_id: current_user.id).present?
 ```
-上記はbefore_actionに指定されているアクション。＠cardは、current_user.idと紐付いている。
+上記はbefore_actionに指定されているアクション。cardsテーブルからuser_idをキーにカード情報を呼び出す。where~firstは、find_byで代替可能。if 以下で、card情報がnilの場合に発生するエラーを防いでいる。
 ```
 def create  # カード登録処理
     Payjp.api_key = ENV["PAYJP_PRIVATE_KEY"]
