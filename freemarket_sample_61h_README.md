@@ -240,7 +240,7 @@ https://gyazo.com/e000951f649ffb312a7fdb8ff0c3c794
 
 ## ログイン・サインアップ機能
 ### メールアドレスで登録する
-HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定。User.newを実行した上で、入力された情報をsession[:XX]に代入している（各stepに書かれているsessionデータは、一つ前のstepのものだが、前にリクエストされたデータを、次のリクエストへ引き継ぐ役目があると考えると理解できる。また、validates_step1~4で、一括してバリデーションをかけている（バリデーションの方法（正規表現）は、user.rbに書かれている）。生年月日については、date_selectメソッドを利用（ビューに具体的な記述がある）。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。  
+HTTP通信はステートレスで、何もしなければ入力された情報（＝以前のリクエスト）をページ遷移時（＝次のリクエスト）に維持することができない。railsのsessionメソッドは、ブラウザ側（＝クライアントサイド）でcookiesという小さなテキストファイルに情報の一時的な保存を可能にするもの。これを利用して連続的なユーザー情報入力と、ログイン状態の維持を行う。なお、広義のsessionの意味は、ログイン〜ログアウトまでの一連の流れのこと。本Appではsessionメソッドを利用し、signup_controllerに入力段階（ページ）毎にstep1からstep4のアクションを設定。User.newを実行した上で、入力された情報をsession[:XX]に代入している（各stepに書かれているsessionデータは、一つ前のstepのものだが、前にリクエストされたデータを、次のリクエストへ引き継ぐ役目があると考えると理解できる）。また、validates_step1~4で、各ステップで入力された情報を、次のステップに行く前に（before_actionを見ると分かる）、User.new以降でモデルに渡して、一括してバリデーションしている（正規表現は、user.rbに書かれている）。入力に不備があれば、render :step1~3 unless @user.valid?(:validates_step1~3)で、次のページへ遷移しないようになっている。valid?の後ろの引数は、当該アクションで入力されたsession情報全てを指す。生年月日については、date_selectメソッドを利用（ビューに具体的な記述がある）。エラーメッセージの日本語化については、config/application.rbに、config.i18n.default_locale = :jaと記述。ビューへの表示は、/layouts/_error_messages.html.haml に記述。  
 【signup_controllerの一部抜粋】  
 ```
 def step1
@@ -300,7 +300,7 @@ def validates_step1
     render :step2 unless @user.valid?(:validates_step2)
   end
 ```
-sessionのコーディングはスクラムリーダーが一人で全て行っていたが、まだよく分からない部分が多い。validates_step2のダミーデータの設定については、deviseにもともと入っている設定が邪魔をするのを防ぐためと聞いているが、この書き方でなぜそれを防げるかは、現時点で不明である。引き続きコードの読解および段階的な検証を行い、理解を深めたい。  
+validates_step2と3にある、パスワードとその確認、emailのダミーデータの設定については、deviseにもともと入っている設定が邪魔をするのを防ぐためとスクラムリーダーより聞いているが、自分自身でこれをsession[:XX]に書き直して入力してみたところ、問題なく動いていた。ダミーデータが使用された理由が、現時点では確認できない。
 
 【ユーザー情報入力画面（step1)】  
 ![ユーザー情報入力画面_1(step1_1)](https://user-images.githubusercontent.com/56028886/72711160-dc518d80-3bab-11ea-9f77-79bb2471a7cb.png)
@@ -349,7 +349,54 @@ def callback_for(provider)
 ![購入画面（非アクティブ）](https://user-images.githubusercontent.com/56028886/72789394-0d4ac480-3c77-11ea-9916-ee047d85cc83.png)  
 
 ### クレジットカード登録機能（PAY.JPを利用）  
-PAY.JPのアカウントを設定してAPIを取得、また開発サイドではgem 'payjp'をインストール。
+PAY.JPのアカウントを設定してAPIを取得、また開発サイドではgem 'payjp'をインストール。該当するビューは、views/cards/new.html.haml、コントローラは、controllers/cards_controller.rb.まず、コントローラについて若干の説明を行う。
+```
+def set_card
+    @card = Card.where(user_id: current_user.id).first if Card.where(user_id: current_user.id).present?
+```
+上記はbefore_actionに指定されているアクション。＠cardは、current_user.idと紐付いている。
+```
+def create  # カード登録処理
+    Payjp.api_key = ENV["PAYJP_PRIVATE_KEY"]
+
+    if params['payjp-token'].blank?
+      redirect_to action: "new"
+    else
+      customer = Payjp::Customer.create(
+        description: 'test', 
+        email: current_user.email,
+        card: params['payjp-token'], 
+        metadata: {user_id: current_user.id} 
+      )
+      @card = Card.new(user_id: current_user.id, customer_id: customer.id, card_id: customer.default_card)
+      if @card.save
+        redirect_to action: "index"
+      else
+        redirect_to action: "create"
+      end     
+    end
+  end
+```
+以上はカードを登録するcreateアクション。ENV["PAYJP_PRIVATE_KEY"]は、PAY.JPアカウント取得時に発行される秘密鍵（ターミナルから直接bash_profileに記述するため、Appファイルの中にはこの記述が無い）。フォームに入力されたカード情報を送信すると、PAY.JPサーバーに情報が送られ、PAY.JPからカード毎にトークンが返される（['payjp-token']）。サーバーサイドでこのトークンを受け取り、その情報を用いてコントローラーで支払い処理を記述。customer = Payjp::Customer.create(省略)の部分は、PAY.JPへ登録する情報。トークンはe-mailとuser_idで紐づけられていることが分かる。@cardはサーバサイドのcardsテーブルから抽出したインスタンス変数。if文の分岐は、カード情報が保存されれば、カード情報確認画面（indexアクション）へ、保存されなければ登録画面（createアクション）へ遷移するということ。 
+```
+//トークン生成
+      Payjp.createToken(card, (status, response) => {
+        if (status === 200) { 
+          $("#card_number").removeAttr("name");
+          $("#cvc").removeAttr("name");
+          $("#exp_month").removeAttr("name");
+          $("#exp_year").removeAttr("name"); 
+          $("#card_token").append(
+            $('<input type="hidden" name="payjp-token">').val(response.id)
+          ); 
+          document.inputForm.submit();
+          alert("登録が完了しました"); 
+        } else {
+          alert("カード情報が正しくありません。");
+        }
+      });
+```
+上記は、カード情報登録時に用いるJavascriptのコード（ファイル名：payjp.js）。トークン作成のところのみ若干説明する。カード情報入力のあと、送信ボタンを押すと起動。Payjp.createTokenは、トークン作成のメソッド。if (status === 200) はカード情報送信リクエストがPAY.JPサーバーに受け付けられたらという条件（createTokenの引数になっている）。removeAttr("name")は、カード所有者とトークン情報（name）が紐づいてしまうのを防ぐコード 。しかし、同一トークンの購入履歴を管理することはできる。  
 
 ## ヘッダーとフッター
 マークアップを私が担当した。
