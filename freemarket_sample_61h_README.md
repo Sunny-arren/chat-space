@@ -17,7 +17,7 @@ RDBMS：MySQL
 朝のデイリースクラム、夜の一日の作業状況報告は毎日欠かさず行った。  
 日常的にコミュニケーションを取りながら作業を進めていた。  
 タスク管理はTrelloを使用。  
-【Team members】
+【Team members】（一番左が私）  
 ![IMG_20191121_141948](https://user-images.githubusercontent.com/56028886/72675011-a041fe00-3ac1-11ea-8b05-939bd0242d54.jpg)
 【Trelloの状況（開発終了時）】
 ![Trello_1](https://user-images.githubusercontent.com/56028886/72675074-7210ee00-3ac2-11ea-9f6e-558707879e3c.png)
